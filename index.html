@@ -12,7 +12,8 @@
       text-align: center;
     }
     #preview {
-      width: 300px;
+      width: 100%;
+      max-width: 300px;
       margin: 0 auto;
     }
     input, button {
@@ -25,7 +26,7 @@
 <body>
   <h1>Escanear Código QR</h1>
   <!-- Sección para escanear el QR -->
-  <video id="preview" style="width: 300px;"></video>
+  <video id="preview" style="width: 100%; max-width: 300px;"></video>
   <form id="data-form">
     <label for="productCode">Código de Producto:</label>
     <input type="text" id="productCode" name="productCode" readonly>
