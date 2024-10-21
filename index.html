@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Escanear QR y Enviar a Google Sheets</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
+  <!-- Incluir la librería html5-qrcode -->
+  <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
   <style>
     body {
       font-family: 'Roboto', sans-serif;
@@ -29,12 +30,10 @@
       font-size: 24px;
       margin-bottom: 20px;
     }
-    #preview {
+    #qr-reader {
       width: 100%;
       max-width: 300px;
       margin: 10px auto;
-      border-radius: 8px;
-      border: 1px solid #ccc;
     }
     input, button {
       width: 100%;
@@ -70,10 +69,8 @@
     <h1>Escanear Código QR</h1>
     
     <!-- Sección para escanear el QR -->
-    <video id="preview"></video>
-
-    <!-- Botón para activar el escáner -->
-    <button id="start-scan" type="button">Iniciar Escáner QR</button>
+    <div id="qr-reader"></div>
+    <button id="stop-scan" type="button" disabled>Detener Escaneo</button>
 
     <form id="data-form">
       <label for="productCode">Código de Producto:</label>
@@ -102,40 +99,34 @@
     const shelfField = document.getElementById('shelf');
     const countField = document.getElementById('count');
     const form = document.getElementById('data-form');
-    const startScanButton = document.getElementById('start-scan');
-    let scanner;
+    const stopScanButton = document.getElementById('stop-scan');
 
-    // Función para iniciar el escáner de código QR
-    function startQRScanner() {
-      scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
-      scanner.addListener('scan', function (content) {
-        const qrData = content.split("!");
-        productCodeField.value = qrData[0];
-        descriptionField.value = qrData[1];
-        warehouseNoField.value = qrData[2];
-        shelfField.value = qrData[3];
-        scanner.stop();
-        startScanButton.disabled = false;
-        alert("Código QR escaneado con éxito");
-      });
-      Instascan.Camera.getCameras().then(function (cameras) {
-        if (cameras.length > 0) {
-          scanner.start(cameras[0]);
-        } else {
-          alert('No se encontraron cámaras.');
-        }
-      }).catch(function (e) {
-        alert('Error al acceder a la cámara: ' + e);
-      });
+    // Iniciar el escáner QR usando html5-qrcode
+    function onScanSuccess(decodedText, decodedResult) {
+      const qrData = decodedText.split("!");
+      productCodeField.value = qrData[0];
+      descriptionField.value = qrData[1];
+      warehouseNoField.value = qrData[2];
+      shelfField.value = qrData[3];
+
+      html5QrCodeScanner.clear();
+      stopScanButton.disabled = true;
+      alert("Código QR escaneado con éxito");
     }
 
-    // Activa el escáner de código QR al hacer clic en el botón "Iniciar Escáner QR"
-    startScanButton.addEventListener('click', function () {
-      startScanButton.disabled = true; // Deshabilitar el botón mientras se escanea
-      startQRScanner();
+    const html5QrCodeScanner = new Html5QrcodeScanner(
+      "qr-reader", 
+      { fps: 10, qrbox: 250 });
+
+    html5QrCodeScanner.render(onScanSuccess);
+
+    // Detener el escaneo manualmente
+    stopScanButton.addEventListener('click', function () {
+      html5QrCodeScanner.clear();
+      stopScanButton.disabled = true;
     });
 
-    // Envía los datos a la hoja de cálculo de Google Sheets
+    // Enviar los datos a Google Sheets
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       const qrData = `${productCodeField.value}!${descriptionField.value}!${warehouseNoField.value}!${shelfField.value}`;
