@@ -24,88 +24,85 @@
 </head>
 <body>
   <h1>Escanear Código QR</h1>
-
   <!-- Sección para escanear el QR -->
   <div id="reader" style="width: 300px;"></div>
-     <form id="data-form">
-       <label for="productCode">Código de Producto:</label>
-       <input type="text" id="productCode" name="productCode" readonly>
-       <label for="description">Descripción:</label>
-       <input type="text" id="description" name="description" readonly>
-       <label for="warehouseNo">No. de Almacén:</label>
-       <input type="text" id="warehouseNo" name="warehouseNo" readonly>
-       <label for="shelf">Estante:</label>
-       <input type="text" id="shelf" name="shelf" readonly>
-       <label for="count">Cantidad:</label>
-       <input type="number" id="count" name="count" required>
-       <button type="submit">Enviar</button>
-     </form>
-
+  <form id="data-form">
+    <label for="productCode">Código de Producto:</label>
+    <input type="text" id="productCode" name="productCode" readonly>
+    <label for="description">Descripción:</label>
+    <input type="text" id="description" name="description" readonly>
+    <label for="warehouseNo">No. de Almacén:</label>
+    <input type="text" id="warehouseNo" name="warehouseNo" readonly>
+    <label for="shelf">Estante:</label>
+    <input type="text" id="shelf" name="shelf" readonly>
+    <label for="count">Cantidad:</label>
+    <input type="number" id="count" name="count" required>
+    <button type="submit">Enviar</button>
+  </form>
 
   <script>
-       const qrcodeRegion = document.getElementById('reader');
-       const form = document.getElementById('data-form');
-       const productCodeField = document.getElementById('productCode');
-       const descriptionField = document.getElementById('description');
-       const warehouseNoField = document.getElementById('warehouseNo');
-       const shelfField = document.getElementById('shelf');
-       const countField = document.getElementById('count');
+    const qrcodeRegion = document.getElementById('reader');
+    const form = document.getElementById('data-form');
+    const productCodeField = document.getElementById('productCode');
+    const descriptionField = document.getElementById('description');
+    const warehouseNoField = document.getElementById('warehouseNo');
+    const shelfField = document.getElementById('shelf');
+    const countField = document.getElementById('count');
 
-    // Inicializa el escáner de código QR
-       function startQRScanner() {
-  const html5QrCode = new Html5Qrcode("reader");
+    // Función para iniciar el escáner de código QR
+    function startQRScanner() {
+      const html5QrCode = new Html5Qrcode("reader");
 
-  html5QrCode.start(
-    { facingMode: "environment" },
-    {
-      fps: 10,
-      qrbox: {
-        width: 250,
-        height: 250
-      }
-    },
-    (decodedText, decodedResult) => {
-      const qrData = decodedText.split("!");
-      productCodeField.value = qrData[0];
-      descriptionField.value = qrData[1];
-      warehouseNoField.value = qrData[2];
-      shelfField.value = qrData[3];
-      html5QrCode.stop();
-    },
-    (errorMessage) => {
-      console.log(errorMessage);
+      html5QrCode.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: {
+            width: 250,
+            height: 250
+          }
+        },
+        (decodedText, decodedResult) => {
+          const qrData = decodedText.split("!");
+          productCodeField.value = qrData[0];
+          descriptionField.value = qrData[1];
+          warehouseNoField.value = qrData[2];
+          shelfField.value = qrData[3];
+          html5QrCode.stop();
+        },
+        (errorMessage) => {
+          console.log(errorMessage);
+        }
+      );
     }
-  );
-}
 
-// Llama a la función para iniciar el escáner de código QR
-startQRScanner();
+    // Activa el escáner de código QR al enfocar en el campo "Código de Producto"
+    productCodeField.addEventListener('focus', startQRScanner);
 
     // Envía los datos a la hoja de cálculo de Google Sheets
-       form.addEventListener('submit', function (e) {
-         e.preventDefault();
-         const qrData = `${productCodeField.value}!${descriptionField.value}!${warehouseNoField.value}!${shelfField.value}`;
-         const count = countField.value;
-
-         fetch("https://script.google.com/macros/s/AKfycbwVC5KEaTtkMpyxFlEiCZh6q0zxHLIg2AKE9KAfwklSM4t3F4paUOWVEL4yq-Rcrg4Y/exec", {
-           method: "POST",
-           headers: {
-             "Content-Type": "application/json"
-           },
-           body: JSON.stringify({
-             qrData: qrData,
-             count: count
-           })
-         })
-         .then(response => response.text())
-         .then(data => {
-           alert("Datos enviados correctamente");
-           form.reset();
-         })
-         .catch(error => {
-           console.error("Error al enviar los datos:", error);
-         });
-       });
-     </script>
-   </body>
-   </html>
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const qrData = `${productCodeField.value}!${descriptionField.value}!${warehouseNoField.value}!${shelfField.value}`;
+      const count = countField.value;
+      fetch("https://script.google.com/macros/s/AKfycbwVC5KEaTtkMpyxFlEiCZh6q0zxHLIg2AKE9KAfwklSM4t3F4paUOWVEL4yq-Rcrg4Y/exec", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          qrData: qrData,
+          count: count
+        })
+      })
+        .then(response => response.text())
+        .then(data => {
+          alert("Datos enviados correctamente");
+          form.reset();
+        })
+        .catch(error => {
+          console.error("Error al enviar los datos:", error);
+        });
+    });
+  </script>
+</body>
+</html>
