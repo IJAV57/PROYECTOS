@@ -73,11 +73,13 @@
         (errorMessage) => {
           console.log(errorMessage);
         }
-      );
+      ).catch((err) => {
+        console.log(`Error al iniciar el escáner: ${err}`);
+      });
     }
 
-    // Activa el escáner de código QR al enfocar en el campo "Código de Producto"
-    productCodeField.addEventListener('focus', startQRScanner);
+    // Activa el escáner de código QR al hacer clic en el campo "Código de Producto"
+    productCodeField.addEventListener('click', startQRScanner);
 
     // Envía los datos a la hoja de cálculo de Google Sheets
     form.addEventListener('submit', function (e) {
