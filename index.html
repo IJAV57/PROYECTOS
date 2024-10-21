@@ -7,39 +7,93 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
       text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
     }
     #preview {
       width: 100%;
       max-width: 300px;
-      margin: 0 auto;
+      margin: 10px auto;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
     input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    button:disabled {
+      background-color: #6c757d;
+    }
+    label {
+      text-align: left;
       display: block;
-      margin: 10px auto;
-      padding: 5px 10px;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>Escanear Código QR</h1>
-  <!-- Sección para escanear el QR -->
-  <video id="preview" style="width: 100%; max-width: 300px;"></video>
-  <form id="data-form">
-    <label for="productCode">Código de Producto:</label>
-    <input type="text" id="productCode" name="productCode" readonly>
-    <label for="description">Descripción:</label>
-    <input type="text" id="description" name="description" readonly>
-    <label for="warehouseNo">No. de Almacén:</label>
-    <input type="text" id="warehouseNo" name="warehouseNo" readonly>
-    <label for="shelf">Estante:</label>
-    <input type="text" id="shelf" name="shelf" readonly>
-    <label for="count">Cantidad:</label>
-    <input type="number" id="count" name="count" required>
-    <button type="submit">Enviar</button>
-  </form>
+
+  <div class="container">
+    <h1>Escanear Código QR</h1>
+    
+    <!-- Sección para escanear el QR -->
+    <video id="preview"></video>
+
+    <!-- Botón para activar el escáner -->
+    <button id="start-scan" type="button">Iniciar Escáner QR</button>
+
+    <form id="data-form">
+      <label for="productCode">Código de Producto:</label>
+      <input type="text" id="productCode" name="productCode" readonly>
+
+      <label for="description">Descripción:</label>
+      <input type="text" id="description" name="description" readonly>
+
+      <label for="warehouseNo">No. de Almacén:</label>
+      <input type="text" id="warehouseNo" name="warehouseNo" readonly>
+
+      <label for="shelf">Estante:</label>
+      <input type="text" id="shelf" name="shelf" readonly>
+
+      <label for="count">Cantidad:</label>
+      <input type="number" id="count" name="count" required>
+
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
 
   <script>
     const productCodeField = document.getElementById('productCode');
@@ -48,6 +102,7 @@
     const shelfField = document.getElementById('shelf');
     const countField = document.getElementById('count');
     const form = document.getElementById('data-form');
+    const startScanButton = document.getElementById('start-scan');
     let scanner;
 
     // Función para iniciar el escáner de código QR
@@ -60,6 +115,8 @@
         warehouseNoField.value = qrData[2];
         shelfField.value = qrData[3];
         scanner.stop();
+        startScanButton.disabled = false;
+        alert("Código QR escaneado con éxito");
       });
       Instascan.Camera.getCameras().then(function (cameras) {
         if (cameras.length > 0) {
@@ -72,8 +129,11 @@
       });
     }
 
-    // Activa el escáner de código QR al hacer clic en el campo "Código de Producto"
-    productCodeField.addEventListener('click', startQRScanner);
+    // Activa el escáner de código QR al hacer clic en el botón "Iniciar Escáner QR"
+    startScanButton.addEventListener('click', function () {
+      startScanButton.disabled = true; // Deshabilitar el botón mientras se escanea
+      startQRScanner();
+    });
 
     // Envía los datos a la hoja de cálculo de Google Sheets
     form.addEventListener('submit', function (e) {
@@ -90,15 +150,16 @@
           count: count
         })
       })
-        .then(response => response.text())
-        .then(data => {
-          alert("Datos enviados correctamente");
-          form.reset();
-        })
-        .catch(error => {
-          console.error("Error al enviar los datos:", error);
-        });
+      .then(response => response.text())
+      .then(data => {
+        alert("Datos enviados correctamente");
+        form.reset();
+      })
+      .catch(error => {
+        console.error("Error al enviar los datos:", error);
+      });
     });
   </script>
+
 </body>
 </html>
