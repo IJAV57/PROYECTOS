@@ -52,24 +52,34 @@
        const countField = document.getElementById('count');
 
     // Inicializa el escáner de código QR
-       const html5QrCode = new Html5Qrcode("reader");
-       const qrConfig = { fps: 10, qrbox: 250 };
+       function startQRScanner() {
+  const html5QrCode = new Html5Qrcode("reader");
 
-       html5QrCode.start(
-         { facingMode: "environment" },
-         qrConfig,
-         (decodedText, decodedResult) => {
-           const qrData = decodedText.split("!");
-           productCodeField.value = qrData[0];
-           descriptionField.value = qrData[1];
-           warehouseNoField.value = qrData[2];
-           shelfField.value = qrData[3];
-           html5QrCode.stop();
-         },
-         (errorMessage) => {
-           console.log(errorMessage);
-         }
-       );
+  html5QrCode.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+    },
+    (decodedText, decodedResult) => {
+      const qrData = decodedText.split("!");
+      productCodeField.value = qrData[0];
+      descriptionField.value = qrData[1];
+      warehouseNoField.value = qrData[2];
+      shelfField.value = qrData[3];
+      html5QrCode.stop();
+    },
+    (errorMessage) => {
+      console.log(errorMessage);
+    }
+  );
+}
+
+// Llama a la función para iniciar el escáner de código QR
+startQRScanner();
 
     // Envía los datos a la hoja de cálculo de Google Sheets
        form.addEventListener('submit', function (e) {
