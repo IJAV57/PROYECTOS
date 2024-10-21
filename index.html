@@ -77,7 +77,7 @@
 
     <form id="data-form">
       <label for="productCode">Código de Producto:</label>
-      <input type="text" id="productCode" name="productCode" >
+      <input type="text" id="productCode" name="productCode" readonly>
 
       <label for="description">Descripción:</label>
       <input type="text" id="description" name="description" readonly>
@@ -122,10 +122,10 @@
         if (cameras.length > 0) {
           scanner.start(cameras[0]);
         } else {
-          console.error('No se encontraron cámaras.');
+          alert('No se encontraron cámaras.');
         }
       }).catch(function (e) {
-        console.error(e);
+        alert('Error al acceder a la cámara: ' + e);
       });
     }
 
@@ -156,7 +156,7 @@
         form.reset();
       })
       .catch(error => {
-        console.error("Error al enviar los datos:", error);
+        alert("Error al enviar los datos: " + error);
       });
     });
   </script>
