@@ -66,6 +66,7 @@
     <form id="productForm" class="hidden">
         <input type="text" id="productCode" name="productCode" placeholder="Código de Producto" required>
         <input type="text" id="description" name="description" placeholder="Descripción" required>
+        <input type="text" id="description" name="um" placeholder="Unidad de Medida" required>
         <input type="text" id="warehouseNo" name="warehouseNo" placeholder="No. de Almacén" required>
         <input type="text" id="shelf" name="shelf" placeholder="Estante" required>
         <input type="number" id="count" name="count" placeholder="Cantidad" required>
@@ -137,6 +138,7 @@
         function enviarFormulario() {
             const productCode = document.getElementById('productCode').value;
             const description = document.getElementById('description').value;
+            const um = document.getElementById('um').value;
             const warehouseNo = document.getElementById('warehouseNo').value;
             const shelf = document.getElementById('shelf').value;
             const count = document.getElementById('count').value;
@@ -144,9 +146,9 @@
             const user = auth.currentUser;
             const nombrecorto = document.getElementById('nombrecorto').value;
             const timestamp = new Date().toISOString();
-            const newId = `${productCode}_${selectedCount}`;
+            const newId = `${productCode}_${um}_${warehouseNo}_${shelf}_${selectedCount}`;
 
-            if (!productCode || !description || !warehouseNo || !shelf || !count || !selectedCount) {
+            if (!productCode || !description || !um || !warehouseNo || !shelf || !count || !selectedCount) {
                 alert('Por favor, completa todos los campos');
                 return;
             }
@@ -160,6 +162,7 @@
                     database.ref('inventario/' + newId).set({
                         productCode: productCode,
                         description: description,
+                        um: um,
                         warehouseNo: warehouseNo,
                         shelf: shelf,
                         count: count,
@@ -188,11 +191,12 @@
                 },
                 (decodedText, decodedResult) => {
                     const datos = decodedText.split("!");
-                    if (datos.length >= 4) {
+                    if (datos.length >= 5) {
                         document.getElementById('productCode').value = datos[0] || '';
                         document.getElementById('description').value = datos[1] || '';
-                        document.getElementById('warehouseNo').value = datos[2] || '';
-                        document.getElementById('shelf').value = datos[3] || '';
+                        document.getElementById('um').value = datos[2] || '';
+                        document.getElementById('warehouseNo').value = datos[3] || '';
+                        document.getElementById('shelf').value = datos[4] || '';
                     } else {
                         alert('Datos escaneados incorrectos');
                     }
