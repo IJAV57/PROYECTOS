@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Inventario</title>
-    
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
     <style>
@@ -37,23 +36,41 @@
         #qr-reader {
             width: 50%;
             max-width: 500px;
-            margin: 0 auto;
+            margin: 0px 0 0px 0; /* Margen superior e inferior de 20px, 0 a los lados */
+            margin-left: 0; /* Asegura que el contenedor esté alineado a la izquierda */
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h2>Captura de Inventario</h2>
-    <div id="qr-reader" style="display: none;"></div>
-    <form id="productForm">
+    <h2>Iniciar Sesión</h2>
+    <div id="loginForm">
+        <input type="email" id="email" placeholder="Correo" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button onclick="login()">Iniciar Sesión</button>
+        <p id="loginError" style="color:red;"></p>
+    </div>
+
+    <div id="countSelection" class="hidden">
+        <h2>Seleccionar Conteo</h2>
+        <button onclick="selectCount(1)">Conteo 1</button>
+        <button onclick="selectCount(2)">Conteo 2</button>
+    </div>
+
+    <div id="qr-reader" class="hidden"></div>
+    <form id="productForm" class="hidden">
         <input type="text" id="productCode" name="productCode" placeholder="Código de Producto" required>
         <input type="text" id="description" name="description" placeholder="Descripción" required>
         <input type="text" id="warehouseNo" name="warehouseNo" placeholder="No. de Almacén" required>
         <input type="text" id="shelf" name="shelf" placeholder="Estante" required>
         <input type="number" id="count" name="count" placeholder="Cantidad" required>
+        <input type="hidden" id="selectedCount" name="selectedCount">
         <button type="button" onclick="enviarFormulario()">Enviar</button>
     </form>
 
-    <button id="startScan" onclick="startQrScanner()">Iniciar Escáner</button>
+    <button id="startScan" class="hidden" onclick="startQrScanner()">Iniciar Escáner</button>
     
     <script>
         // Configuración de Firebase
@@ -68,8 +85,34 @@
         };
 
         // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const database = firebase.database();
+
+        // Función para iniciar sesión
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
+                // Ingreso exitoso
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('countSelection').classList.remove('hidden');
+            }).catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                document.getElementById('loginError').innerText = errorMessage;
+            });
+        }
+
+        // Función para seleccionar el conteo
+        function selectCount(count) {
+            document.getElementById('selectedCount').value = count;
+            document.getElementById('countSelection').classList.add('hidden');
+            document.getElementById('qr-reader').classList.remove('hidden');
+            document.getElementById('productForm').classList.remove('hidden');
+            document.getElementById('startScan').classList.remove('hidden');
+        }
 
         // Función para enviar el formulario
         function enviarFormulario() {
@@ -78,6 +121,7 @@
             const warehouseNo = document.getElementById('warehouseNo').value;
             const shelf = document.getElementById('shelf').value;
             const count = document.getElementById('count').value;
+            const selectedCount = document.getElementById('selectedCount').value;
 
             if (productCode && description && warehouseNo && shelf && count) {
                 const timestamp = new Date().toISOString();
@@ -89,6 +133,7 @@
                     warehouseNo: warehouseNo,
                     shelf: shelf,
                     count: count,
+                    selectedCount: selectedCount,
                     timestamp: timestamp
                 }).then(() => {
                     alert('Datos enviados correctamente');
@@ -105,34 +150,29 @@
         function startQrScanner() {
             const html5QrCode = new Html5Qrcode("qr-reader");
             html5QrCode.start(
-                { facingMode: "environment" }, // Cambia a "user" para la cámara frontal
+                { facingMode: "environment" },
                 {
                     fps: 30,
                     qrbox: { width: 250, height: 250 }
                 },
                 (decodedText, decodedResult) => {
-                    // Cuando se escanea un código QR, separar los datos y llenar el formulario
-                    const datos = decodedText.split("!"); // Separar usando "!" como delimitador
+                    const datos = decodedText.split("!");
                     if (datos.length >= 4) {
                         document.getElementById('productCode').value = datos[0] || '';
                         document.getElementById('description').value = datos[1] || '';
                         document.getElementById('warehouseNo').value = datos[2] || '';
                         document.getElementById('shelf').value = datos[3] || '';
-                        //document.getElementById('count').value = datos[4] || ''; // Asigna la cantidad si está presente
                     } else {
                         alert('Datos escaneados no válidos.');
                     }
-                    html5QrCode.stop(); // Detener el escáner después de leer el código
-                    document.getElementById('qr-reader').style.display = 'none'; // Ocultar el lector QR
+                    html5QrCode.stop();
                 },
                 (errorMessage) => {
-                    // Manejo de errores opcional
                     console.log(errorMessage);
                 }
             ).catch((err) => {
                 console.error('Error al iniciar el escáner: ', err);
             });
-            document.getElementById('qr-reader').style.display = 'block'; // Mostrar el lector QR
         }
     </script>
 </body>
