@@ -130,7 +130,7 @@
                 const timestamp = new Date().toISOString();
 
                 // Guardar los datos en Firebase
-                database.ref('inventario/' + productCode).set({
+                database.ref('inventario/' + selectedCount + '' + productCode).set({
                     productCode: productCode,
                     description: description,
                     warehouseNo: warehouseNo,
