@@ -49,6 +49,7 @@
 <body>
     <h2>Iniciar Sesión</h2>
     <div id="loginForm">
+        <input type="text" id="nombrecorto" placeholder="Nombre y Apellido" required>
         <input type="email" id="email" placeholder="Correo" required>
         <input type="password" id="password" placeholder="Contraseña" required>
         <button onclick="login()">Iniciar Sesión</button>
@@ -69,6 +70,7 @@
         <input type="text" id="shelf" name="shelf" placeholder="Estante" required>
         <input type="number" id="count" name="count" placeholder="Cantidad" required>
         <input type="hidden" id="selectedCount" name="selectedCount">
+        <input type="hidden" id="nombrecorto" name="nombrecorto">
         <button type="button" onclick="enviarFormulario()">Enviar</button>
     </form>
 
@@ -114,30 +116,40 @@
             document.getElementById('qr-reader').classList.remove('hidden');
             document.getElementById('productForm').classList.remove('hidden');
             document.getElementById('startScan').classList.remove('hidden');
+            document.getElementById('nombrecorto').classList.remove('hidden');
         }
 
         // Función para enviar el formulario
         function enviarFormulario() {
             const productCode = document.getElementById('productCode').value;
+            const countType = document.querySelector('input[name="countType"]:checked').value; // Capturar el tipo de conteo
             const description = document.getElementById('description').value;
             const warehouseNo = document.getElementById('warehouseNo').value;
             const shelf = document.getElementById('shelf').value;
             const count = document.getElementById('count').value;
             const selectedCount = document.getElementById('selectedCount').value;
             const user = auth.currentUser; // Obtener el usuario actual
-
-            if (productCode && description && warehouseNo && shelf && count) {
-                const timestamp = new Date().toISOString();
+            const nombrecorto =  document.getElementById('nombrecorto').value;
+            const timestamp = new Date().toISOString();
+            const newId = `${productCode}_${countType}`;
+            
+            // Verificar si ya existe un registro
+            database.ref('inventario/' + newId).once('value').then((snapshot) => {
+            if (snapshot.exists()) {
+                alert('Ya existe una captura para este código y conteo.');
+            } else {   
 
                 // Guardar los datos en Firebase
-                database.ref('inventario/' + selectedCount + '' + productCode).set({
+                database.ref('inventario/' + newId).set({
                     productCode: productCode,
                     description: description,
                     warehouseNo: warehouseNo,
                     shelf: shelf,
                     count: count,
                     selectedCount: selectedCount,
+                    countType: countType,
                     userEmail: user.email, // Guardar el correo del usuario
+                    nombrecorto : nombrecorto, // Guardar el Nombre del usuario
                     timestamp: timestamp
                 }).then(() => {
                     alert('Datos enviados correctamente');
