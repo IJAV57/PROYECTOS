@@ -124,6 +124,7 @@
             const shelf = document.getElementById('shelf').value;
             const count = document.getElementById('count').value;
             const selectedCount = document.getElementById('selectedCount').value;
+            const user = auth.currentUser; // Obtener el usuario actual
 
             if (productCode && description && warehouseNo && shelf && count) {
                 const timestamp = new Date().toISOString();
@@ -136,6 +137,7 @@
                     shelf: shelf,
                     count: count,
                     selectedCount: selectedCount,
+                    userEmail: user.email, // Guardar el correo del usuario
                     timestamp: timestamp
                 }).then(() => {
                     alert('Datos enviados correctamente');
