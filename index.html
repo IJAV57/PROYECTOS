@@ -117,11 +117,12 @@
                         document.getElementById('description').value = datos[1] || '';
                         document.getElementById('warehouseNo').value = datos[2] || '';
                         document.getElementById('shelf').value = datos[3] || '';
-                        //document.getElementById('count').value = datos[4] || '';
+                        //document.getElementById('count').value = datos[4] || ''; // Asigna la cantidad si está presente
                     } else {
                         alert('Datos escaneados no válidos.');
                     }
                     html5QrCode.stop(); // Detener el escáner después de leer el código
+                    document.getElementById('qr-reader').style.display = 'none'; // Ocultar el lector QR
                 },
                 (errorMessage) => {
                     // Manejo de errores opcional
