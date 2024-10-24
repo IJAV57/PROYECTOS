@@ -129,9 +129,9 @@
             const count = document.getElementById('count').value;
             const selectedCount = document.getElementById('selectedCount').value;
             const user = auth.currentUser; // Obtener el usuario actual
-            const nombrecorto =  document.getElementById('hiddenNombreCorto').value;
+            const nombrecorto =  document.getElementById('nombrecorto').value; // Obtén el nombre corto
             const timestamp = new Date().toISOString();
-            const newId = `${productCode}_${countType}`;
+            const newId = `${productCode}_${countType}`; 
             
             // Verificar si ya existe un registro
             database.ref('inventario/' + newId).once('value').then((snapshot) => {
