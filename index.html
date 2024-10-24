@@ -106,13 +106,13 @@
             html5QrCode.start(
                 { facingMode: "environment" }, // Cambia a "user" para la cámara frontal
                 {
-                    fps: 50,
+                    fps: 30,
                     qrbox: { width: 250, height: 250 }
                 },
                 (decodedText, decodedResult) => {
                     // Cuando se escanea un código QR, separar los datos y llenar el formulario
                     const datos = decodedText.split("!"); // Separar usando "!" como delimitador
-                    if (datos.length >= 5) {
+                    if (datos.length >= 4) {
                         document.getElementById('productCode').value = datos[0] || '';
                         document.getElementById('description').value = datos[1] || '';
                         document.getElementById('warehouseNo').value = datos[2] || '';
