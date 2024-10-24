@@ -70,7 +70,7 @@
         <input type="text" id="shelf" name="shelf" placeholder="Estante" required>
         <input type="number" id="count" name="count" placeholder="Cantidad" required>
         <input type="hidden" id="selectedCount" name="selectedCount">
-        <input type="hidden" id="nombrecorto" name="nombrecorto">
+        <input type="hidden" id="hiddenNombreCorto" name="hiddenNombreCorto">
         <button type="button" onclick="enviarFormulario()">Enviar</button>
     </form>
 
@@ -129,7 +129,7 @@
             const count = document.getElementById('count').value;
             const selectedCount = document.getElementById('selectedCount').value;
             const user = auth.currentUser; // Obtener el usuario actual
-            const nombrecorto =  document.getElementById('nombrecorto').value;
+            const nombrecorto =  document.getElementById('hiddenNombreCorto').value;
             const timestamp = new Date().toISOString();
             const newId = `${productCode}_${countType}`;
             
