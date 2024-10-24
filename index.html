@@ -197,16 +197,14 @@
                         document.getElementById('um').value = datos[2] || '';
                         document.getElementById('warehouseNo').value = datos[3] || '';
                         document.getElementById('shelf').value = datos[4] || '';
-                    } else {
-                        alert('Datos escaneados incorrectos');
                     }
                 },
                 (errorMessage) => {
-                    console.log("QR Code no leído", errorMessage);
-                })
-                .catch((err) => {
-                    console.log("Error en el escáner: ", err);
-                });
+                    console.log("No se ha detectado un código QR.", errorMessage);
+                }
+            ).catch((error) => {
+                console.error("Error en el escaneo de QR", error);
+            });
         }
     </script>
 </body>
