@@ -1,156 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Escanear QR y Enviar a Google Sheets</title>
-  <!-- Incluir la librería html5-qrcode -->
-  <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background-color: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-    }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    #qr-reader {
-      width: 100%;
-      max-width: 300px;
-      margin: 10px auto;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #218838;
-    }
-    button:disabled {
-      background-color: #6c757d;
-    }
-    label {
-      text-align: left;
-      display: block;
-      font-size: 14px;
-      margin-bottom: 5px;
-      color: #333;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario</title>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #qr-reader {
+            width: 50%;
+            max-width: 500px;
+        }
+    </style>
 </head>
 <body>
-
-  <div class="container">
-    <h1>Escanear Código QR</h1>
-    
-    <!-- Sección para escanear el QR -->
+    <h2>Captura de Inventario</h2>
     <div id="qr-reader"></div>
-    <button id="stop-scan" type="button" disabled>Detener Escaneo</button>
-
-    <form id="data-form">
-      <label for="productCode">Código de Producto:</label>
-      <input type="text" id="productCode" name="productCode" readonly>
-
-      <label for="description">Descripción:</label>
-      <input type="text" id="description" name="description" readonly>
-
-      <label for="warehouseNo">No. de Almacén:</label>
-      <input type="text" id="warehouseNo" name="warehouseNo" readonly>
-
-      <label for="shelf">Estante:</label>
-      <input type="text" id="shelf" name="shelf" readonly>
-
-      <label for="count">Cantidad:</label>
-      <input type="number" id="count" name="count" required>
-
-      <button type="submit">Enviar</button>
+    <form id="productForm">
+        <input type="text" id="productCode" name="productCode" placeholder="Código de Producto" required>
+        <input type="text" id="description" name="description" placeholder="Descripción" required>
+        <input type="text" id="warehouseNo" name="warehouseNo" placeholder="No. de Almacén" required>
+        <input type="text" id="shelf" name="shelf" placeholder="Estante" required>
+        <input type="number" id="count" name="count" placeholder="Cantidad" required>
+        <button type="button" onclick="enviarFormulario()">Enviar</button>
     </form>
-  </div>
 
-  <script>
-    const productCodeField = document.getElementById('productCode');
-    const descriptionField = document.getElementById('description');
-    const warehouseNoField = document.getElementById('warehouseNo');
-    const shelfField = document.getElementById('shelf');
-    const countField = document.getElementById('count');
-    const form = document.getElementById('data-form');
-    const stopScanButton = document.getElementById('stop-scan');
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXVSySQ7X5-4Z38BJLnchYfMd7LEsP27o",
+            authDomain: "inventary-ijjr-tubosmonterrey.firebaseapp.com",
+            databaseURL: "https://inventary-ijjr-tubosmonterrey-default-rtdb.firebaseio.com",
+            projectId: "inventary-ijjr-tubosmonterrey",
+            storageBucket: "inventary-ijjr-tubosmonterrey.appspot.com",
+            messagingSenderId: "495571852344",
+            appId: "1:495571852344:web:fcddeb18942d55b54b9acd",
+        };
 
-    // Iniciar el escáner QR usando html5-qrcode
-    function onScanSuccess(decodedText, decodedResult) {
-      const qrData = decodedText.split("!");
-      productCodeField.value = qrData[0];
-      descriptionField.value = qrData[1];
-      warehouseNoField.value = qrData[2];
-      shelfField.value = qrData[3];
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-      html5QrCodeScanner.clear();
-      stopScanButton.disabled = true;
-      alert("Código QR escaneado con éxito");
-    }
+        // Función para enviar el formulario
+        function enviarFormulario() {
+            const productCode = document.getElementById('productCode').value;
+            const description = document.getElementById('description').value;
+            const warehouseNo = document.getElementById('warehouseNo').value;
+            const shelf = document.getElementById('shelf').value;
+            const count = document.getElementById('count').value;
 
-    const html5QrCodeScanner = new Html5QrcodeScanner(
-      "qr-reader", 
-      { fps: 10, qrbox: 250 });
+            if (productCode && description && warehouseNo && shelf && count) {
+                const timestamp = new Date().toISOString();
 
-    html5QrCodeScanner.render(onScanSuccess);
-
-    // Detener el escaneo manualmente
-    stopScanButton.addEventListener('click', function () {
-      html5QrCodeScanner.clear();
-      stopScanButton.disabled = true;
-    });
-
-    // Enviar los datos a Google Sheets
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const qrData = `${productCodeField.value}!${descriptionField.value}!${warehouseNoField.value}!${shelfField.value}`;
-      const count = countField.value;
-      fetch("https://script.google.com/macros/s/AKfycbwVC5KEaTtkMpyxFlEiCZh6q0zxHLIg2AKE9KAfwklSM4t3F4paUOWVEL4yq-Rcrg4Y/exec", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          qrData: qrData,
-          count: count
-        })
-      })
-      .then(response => response.text())
-      .then(data => {
-        alert("Datos enviados correctamente");
-        form.reset();
-      })
-      .catch(error => {
-        alert("Error al enviar los datos: " + error);
-      });
-    });
-  </script>
-
+                // Guardar los datos en Firebase
+                database.ref('inventario/' + productCode).set({
+                    productCode: productCode,
+                    description: description,
+                    warehouseNo: warehouseNo,
+                    shelf: shelf,
+                    count: count,
+                    timestamp: timestamp
+                }).then(() => {
+                    alert('Datos enviados correctamente');
+                    document.getElementById('productForm').reset();
+                }).catch((error) => {
+                    alert('Error al enviar los datos: ' + error.message);
+                });
+            } else {
+                alert('Por favor, completa todos los campos');
+            }
+        }
+    </script>
 </body>
 </html>
