@@ -106,7 +106,7 @@
             html5QrCode.start(
                 { facingMode: "environment" }, // Cambia a "user" para la cámara frontal
                 {
-                    fps: 10,
+                    fps: 50,
                     qrbox: { width: 250, height: 250 }
                 },
                 (decodedText, decodedResult) => {
@@ -117,7 +117,7 @@
                         document.getElementById('description').value = datos[1] || '';
                         document.getElementById('warehouseNo').value = datos[2] || '';
                         document.getElementById('shelf').value = datos[3] || '';
-                        document.getElementById('count').value = datos[4] || '';
+                        //document.getElementById('count').value = datos[4] || '';
                     } else {
                         alert('Datos escaneados no válidos.');
                     }
