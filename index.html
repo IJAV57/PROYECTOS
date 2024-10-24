@@ -7,7 +7,8 @@
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
-
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,12 +36,13 @@
         #qr-reader {
             width: 50%;
             max-width: 500px;
+            margin: 0 auto;
         }
     </style>
 </head>
 <body>
     <h2>Captura de Inventario</h2>
-    <div id="qr-reader"></div>
+    <div id="qr-reader" style="display: none;"></div>
     <form id="productForm">
         <input type="text" id="productCode" name="productCode" placeholder="Código de Producto" required>
         <input type="text" id="description" name="description" placeholder="Descripción" required>
@@ -50,6 +52,8 @@
         <button type="button" onclick="enviarFormulario()">Enviar</button>
     </form>
 
+    <button id="startScan" onclick="startQrScanner()">Iniciar Escáner</button>
+    
     <script>
         // Configuración de Firebase
         const firebaseConfig = {
@@ -94,6 +98,39 @@
             } else {
                 alert('Por favor, completa todos los campos');
             }
+        }
+
+        // Función para iniciar el escáner de QR
+        function startQrScanner() {
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start(
+                { facingMode: "environment" }, // Cambia a "user" para la cámara frontal
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText, decodedResult) => {
+                    // Cuando se escanea un código QR, separar los datos y llenar el formulario
+                    const datos = decodedText.split("!"); // Separar usando "!" como delimitador
+                    if (datos.length >= 5) {
+                        document.getElementById('productCode').value = datos[0] || '';
+                        document.getElementById('description').value = datos[1] || '';
+                        document.getElementById('warehouseNo').value = datos[2] || '';
+                        document.getElementById('shelf').value = datos[3] || '';
+                        document.getElementById('count').value = datos[4] || '';
+                    } else {
+                        alert('Datos escaneados no válidos.');
+                    }
+                    html5QrCode.stop(); // Detener el escáner después de leer el código
+                },
+                (errorMessage) => {
+                    // Manejo de errores opcional
+                    console.log(errorMessage);
+                }
+            ).catch((err) => {
+                console.error('Error al iniciar el escáner: ', err);
+            });
+            document.getElementById('qr-reader').style.display = 'block'; // Mostrar el lector QR
         }
     </script>
 </body>
